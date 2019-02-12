@@ -49,7 +49,7 @@ public class Shell {
                     } catch (IOException e) {
                         //e.printStackTrace();
                     }
-                    commandHistory.add(command);
+                    addCommandHistory(command);
                     break;
                 case "cd":
 
@@ -80,11 +80,29 @@ public class Shell {
                             e.printStackTrace();
                         }
                     }
+                    else if (secondComandFinal.get(1).startsWith("..")){
+
+                        int pos = 0;
+                        if(secondComandFinal.get(1).contains("/")){
+                            String[] goBacks = secondComandFinal.get(1).split("/");
+
+                            for(String goBack : goBacks){
+                                pos = cdDirection.lastIndexOf('/');
+                                cdDirection = cdDirection.substring(0, pos);
+                            }
+                        } else {
+                            pos = cdDirection.lastIndexOf('/');
+                            cdDirection = cdDirection.substring(0, pos);
+                        }
+
+                        pb.directory(new File(cdDirection));
+                    }
                     else {
-                        cdDirection = secondCommand[1];
+                        cdDirection += "/" + secondCommand[1];
+                        pb.directory(new File(cdDirection));
                     }
                     System.out.println(cdDirection);
-                    commandHistory.add(command);
+                    addCommandHistory(command);
                     break;
 
                 case "echo":
@@ -101,7 +119,7 @@ public class Shell {
                     } catch (IOException e) {
                         //e.printStackTrace();
                     }
-                    commandHistory.add(command);
+                    addCommandHistory(command);
                     break;
                 case "ping":
                     //rocessBuilder pb = new ProcessBuilder(secondCommand);
@@ -117,7 +135,7 @@ public class Shell {
                     } catch (IOException e) {
                         //e.printStackTrace();
                     }
-                    commandHistory.add(command);
+                    addCommandHistory(command);
                     break;
                 case "ipconfig":
                     pb = new ProcessBuilder(secondComandFinal);
@@ -133,7 +151,7 @@ public class Shell {
                     } catch (IOException e) {
                         //e.printStackTrace();
                     }
-                    commandHistory.add(command);
+                    addCommandHistory(command);
                     break;
                 case "ifconfig":
                     //rocessBuilder pb = new ProcessBuilder(secondCommand);
@@ -149,27 +167,48 @@ public class Shell {
                     } catch (IOException e) {
                         //e.printStackTrace();
                     }
-                    commandHistory.add(command);
+                    addCommandHistory(command);
                     break;
                 case "history":
 
                     getCommandHistory();
                     break;
-
                 case "exit":
                     break;
                 default:
-                    System.err.println("Comando Invalido!");
+                    String commandForHistory = secondComandFinal.get(0);
+                    if(commandForHistory.startsWith("!")){
+                        int historyNum = Integer.parseInt(String.valueOf(commandForHistory.charAt(1)));
+                        int historySize = commandHistory.size();
+
+                        if (historyNum > historySize){
+                            System.err.println("Comando Invalido!");
+                        } else {
+                            String historyCommand = commandHistory.get(historySize-historyNum);
+                            commandParser(historyCommand, cdDirection);
+                        }
+                    } else {
+                        System.err.println("Comando Invalido!");
+                    }
             }
             ;
         }
+    }
+
+    public void addCommandHistory(String command){
+        int size = commandHistory.size();
+
+        if (size == 20){
+            commandHistory.removeFirst();
+        }
+        commandHistory.add(command);
     }
 
     public void getCommandHistory() {
         Iterator<String> iterator = commandHistory.descendingIterator();
 
         int i = 0;
-        while (iterator.hasNext() && i < 20) {
+        while (iterator.hasNext()) {
             i++;
             System.out.println(i + " " + iterator.next());
         }
