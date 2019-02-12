@@ -10,8 +10,8 @@ import java.util.regex.Pattern;
 public class Shell {
     private static LinkedList<String> commandHistory;
     private static String cdDirection;
-    static String operativeSistem;
-    public int errorMsg;
+    private static String operativeSistem;
+
     public Shell() {
         commandHistory = new LinkedList<>();
     }
@@ -23,45 +23,39 @@ public class Shell {
         for (String command : commands) {
             String[] secondCommand = command.split(" ");
 
-            ArrayList<String>secondComandFinal = new ArrayList<>();
+            ArrayList<String> secondComandFinal = new ArrayList<>();
 
-            for(String i : secondCommand)
+            for (String i : secondCommand)
                 secondComandFinal.add(i);
 
 
-            if(operativeSistem=="windows"&& secondComandFinal.get(0)=="ifconfig")
-            {
-                secondComandFinal.set(0,"ipconfig");
-            }else if(operativeSistem.contains("Linux") && secondComandFinal.get(0).contains("ip")){
-                secondComandFinal.set(0,"ifconfig");
+            if (operativeSistem == "windows" && secondComandFinal.get(0) == "ifconfig") {
+                secondComandFinal.set(0, "ipconfig");
+            } else if (operativeSistem.contains("Linux") && secondComandFinal.get(0).contains("ip")) {
+                secondComandFinal.set(0, "ifconfig");
             }
             System.out.println("\n" + secondComandFinal + ":");
 
             switch (secondComandFinal.get(0)) {
-
-
                 case "ls":
                     //rocessBuilder pb = new ProcessBuilder(secondCommand);
-                    if(secondComandFinal.size()<=2)
+                    if (secondComandFinal.size() <= 2)
                         secondComandFinal.add(cdDirection);
 
                     String temporal = new String();
-                    for(String i: secondComandFinal)
-                    {
-                        temporal+=" "+i;
+                    for (String i : secondComandFinal) {
+                        temporal += " " + i;
                     }
                     ProcessBuilder pb = new ProcessBuilder();
 
-                    if(operativeSistem.contains("indows"))
-                    {
+                    if (operativeSistem.contains("windows")) {
                         pb.command("cmd.exe", "/c", temporal);
 
-                    }else if(operativeSistem.contains("inux")){
-                        pb.command("/bin/bash", "-c",temporal);
+                    } else if (operativeSistem.contains("linux")) {
+                        pb.command("/bin/bash", "-c", temporal);
 
-                    }else if(operativeSistem.contains("mac"))
-                    {
-                        pb.command("/bin/sh", "-c",temporal);
+                    } else if (operativeSistem.contains("mac")) {
+                        pb.command("/bin/sh", "-c", temporal);
                     }
 
                     try {
@@ -71,8 +65,6 @@ public class Shell {
                         while ((s = stdInput.readLine()) != null) {
                             System.out.println(s);
                         }
-                        errorMsg = process.waitFor();
-                        System.out.println("Exited with error code: " + errorMsg);
                     } catch (Exception e) {
                         //e.printStackTrace();
                     }
@@ -82,24 +74,21 @@ public class Shell {
                 case "cd":
 
                     pb = new ProcessBuilder();
-                    String temporalcd= new String();
-                    for(String i: secondComandFinal)
-                    {
-                        temporalcd+=" "+i;
+                    String temporalcd = new String();
+                    for (String i : secondComandFinal) {
+                        temporalcd += " " + i;
                     }
-                    //ProcessBuilder pb = new ProcessBuilder();
 
-                    if(operativeSistem.contains("indows"))
-                    {
+                    if (operativeSistem.equals("windows")) {
                         pb.command("cmd.exe", "/c", temporalcd);
 
-                    }else if(operativeSistem.contains("inux")){
-                        pb.command("/bin/bash", "-c",temporalcd);
+                    } else if (operativeSistem.equals("linux")) {
+                        pb.command("/bin/bash", "-c", temporalcd);
 
-                    }else if(operativeSistem.contains("mac"))
-                    {
-                        pb.command("/bin/sh", "-c",temporalcd);
+                    } else if (operativeSistem.equals("mac")) {
+                        pb.command("/bin/sh", "-c", temporalcd);
                     }
+
                     try {
                         Process process = pb.start();
                         BufferedReader stdInput = new BufferedReader(new InputStreamReader(process.getInputStream()));
@@ -108,12 +97,11 @@ public class Shell {
                             System.out.println(s);
 
                         }
-                        errorMsg = process.waitFor();
-                        System.out.println("Exited with error code: " + errorMsg);
                     } catch (Exception e) {
-                        //e.printStackTrace();
+                        e.printStackTrace();
                     }
-                    if(secondComandFinal.size()<2) {
+
+                    if (secondComandFinal.size() < 2) {
                         pb.command("pwd");
 
                         // startinf the process
@@ -127,15 +115,13 @@ public class Shell {
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
-                    }
-
-                    else if (secondComandFinal.get(1).startsWith("..")){
+                    } else if (secondComandFinal.get(1).startsWith("..")) {
 
                         int pos = 0;
-                        if(secondComandFinal.get(1).contains("/") ){
+                        if (secondComandFinal.get(1).contains("/")) {
                             String[] goBacks = secondComandFinal.get(1).split("/");
 
-                            for(String goBack : goBacks){
+                            for (String goBack : goBacks) {
                                 pos = cdDirection.lastIndexOf('/');
                                 cdDirection = cdDirection.substring(0, pos);
                             }
@@ -145,12 +131,20 @@ public class Shell {
                         }
 
                         pb.directory(new File(cdDirection));
-                    }
-                    else if (! secondComandFinal.get(1).contains("home")) {
-                        cdDirection += "/" + secondCommand[1];
+                    } else if (!secondComandFinal.get(1).contains("home")) {
+
+                        if (!secondCommand[1].startsWith("/")) {
+                            cdDirection += "/";
+                        }
+                        cdDirection += secondCommand[1];
+
+                        int size = cdDirection.length();
+                        if (cdDirection.charAt(size - 1) == '/') {
+                            cdDirection = cdDirection.substring(0, size - 1);
+                        }
                         pb.directory(new File(cdDirection));
-                    }else {
-                        cdDirection=secondComandFinal.get(1);
+                    } else {
+                        cdDirection = secondComandFinal.get(1);
                         pb.directory(new File(cdDirection));
                     }
                     System.out.println(cdDirection);
@@ -159,23 +153,19 @@ public class Shell {
 
                 case "echo":
                     pb = new ProcessBuilder();
-                    String temporalecho= new String();
-                    for(String i: secondComandFinal)
-                    {
-                        temporalecho+=" "+i;
+                    String temporalecho = new String();
+                    for (String i : secondComandFinal) {
+                        temporalecho += " " + i;
                     }
-                    //ProcessBuilder pb = new ProcessBuilder();
 
-                    if(operativeSistem.contains("indows"))
-                    {
+                    if (operativeSistem.contains("indows")) {
                         pb.command("cmd.exe", "/c", temporalecho);
 
-                    }else if(operativeSistem.contains("inux")){
-                        pb.command("/bin/bash", "-c",temporalecho);
+                    } else if (operativeSistem.contains("inux")) {
+                        pb.command("/bin/bash", "-c", temporalecho);
 
-                    }else if(operativeSistem.contains("mac"))
-                    {
-                        pb.command("/bin/sh", "-c",temporalecho);
+                    } else if (operativeSistem.contains("mac")) {
+                        pb.command("/bin/sh", "-c", temporalecho);
                     }
                     try {
                         Process process = pb.start();
@@ -184,8 +174,6 @@ public class Shell {
                         while ((s = stdInput.readLine()) != null) {
                             System.out.println(s);
                         }
-                        errorMsg = process.waitFor();
-                        System.out.println("Exited with error code: " + errorMsg);
                     } catch (Exception e) {
                         //e.printStackTrace();
                     }
@@ -193,23 +181,19 @@ public class Shell {
                     break;
                 case "ping":
                     pb = new ProcessBuilder();
-                    String temporalping= new String();
-                    for(String i: secondComandFinal)
-                    {
-                        temporalping+=" "+i;
+                    String temporalping = new String();
+                    for (String i : secondComandFinal) {
+                        temporalping += " " + i;
                     }
-                    //ProcessBuilder pb = new ProcessBuilder();
 
-                    if(operativeSistem.contains("indows"))
-                    {
+                    if (operativeSistem.contains("indows")) {
                         pb.command("cmd.exe", "/c", temporalping);
 
-                    }else if(operativeSistem.contains("inux")){
-                        pb.command("/bin/bash", "-c",temporalping);
+                    } else if (operativeSistem.contains("inux")) {
+                        pb.command("/bin/bash", "-c", temporalping);
 
-                    }else if(operativeSistem.contains("mac"))
-                    {
-                        pb.command("/bin/sh", "-c",temporalping);
+                    } else if (operativeSistem.contains("mac")) {
+                        pb.command("/bin/sh", "-c", temporalping);
                     }
                     try {
                         Process process = pb.start();
@@ -218,8 +202,6 @@ public class Shell {
                         while ((s = stdInput.readLine()) != null) {
                             System.out.println(s);
                         }
-                        errorMsg = process.waitFor();
-                        System.out.println("Exited with error code: " + errorMsg);
                     } catch (Exception e) {
                         //e.printStackTrace();
                     }
@@ -227,23 +209,19 @@ public class Shell {
                     break;
                 case "ipconfig":
                     pb = new ProcessBuilder();
-                    String temporalip= new String();
-                    for(String i: secondComandFinal)
-                    {
-                        temporalip+=" "+i;
+                    String temporalip = new String();
+                    for (String i : secondComandFinal) {
+                        temporalip += " " + i;
                     }
-                    //ProcessBuilder pb = new ProcessBuilder();
 
-                    if(operativeSistem.contains("indows"))
-                    {
+                    if (operativeSistem.contains("indows")) {
                         pb.command("cmd.exe", "/c", temporalip);
 
-                    }else if(operativeSistem.contains("inux")){
-                        pb.command("/bin/bash", "-c",temporalip);
+                    } else if (operativeSistem.contains("inux")) {
+                        pb.command("/bin/bash", "-c", temporalip);
 
-                    }else if(operativeSistem.contains("mac"))
-                    {
-                        pb.command("/bin/sh", "-c",temporalip);
+                    } else if (operativeSistem.contains("mac")) {
+                        pb.command("/bin/sh", "-c", temporalip);
                     }
                     try {
                         Process process = pb.start();
@@ -252,8 +230,6 @@ public class Shell {
                         while ((s = stdInput.readLine()) != null) {
                             System.out.println(s);
                         }
-                        errorMsg = process.waitFor();
-                        System.out.println("Exited with error code: " + errorMsg);
                     } catch (Exception e) {
                         //e.printStackTrace();
                     }
@@ -261,32 +237,27 @@ public class Shell {
                     break;
                 case "ifconfig":
                     pb = new ProcessBuilder();
-                    String temporalif= new String();
-                    for(String i: secondComandFinal)
-                    {
-                        temporalif+=" "+i;
+                    String temporalif = new String();
+                    for (String i : secondComandFinal) {
+                        temporalif += " " + i;
                     }
-                    //ProcessBuilder pb = new ProcessBuilder();
 
-                    if(operativeSistem.contains("indows"))
-                    {
+                    if (operativeSistem.contains("indows")) {
                         pb.command("cmd.exe", "/c", temporalif);
 
-                    }else if(operativeSistem.contains("inux")){
-                        pb.command("/bin/bash", "-c",temporalif);
+                    } else if (operativeSistem.contains("inux")) {
+                        pb.command("/bin/bash", "-c", temporalif);
 
-                    }else if(operativeSistem.contains("mac")) {
+                    } else if (operativeSistem.contains("mac")) {
                         pb.command("/bin/sh", "-c", temporalif);
                     }
-                        try {
+                    try {
                         Process process = pb.start();
                         BufferedReader stdInput = new BufferedReader(new InputStreamReader(process.getInputStream()));
                         String s = null;
                         while ((s = stdInput.readLine()) != null) {
                             System.out.println(s);
                         }
-                        errorMsg = process.waitFor();
-                        System.out.println("Exited with error code: " + errorMsg);
                     } catch (Exception e) {
                         //e.printStackTrace();
                     }
@@ -300,29 +271,28 @@ public class Shell {
                     break;
                 default:
                     String commandForHistory = secondComandFinal.get(0);
-                    if(commandForHistory.startsWith("!")){
+                    if (commandForHistory.startsWith("!")) {
                         int historyNum = Integer.parseInt(String.valueOf(commandForHistory.charAt(1)));
                         int historySize = commandHistory.size();
 
-                        if (historyNum > historySize){
+                        if (historyNum > historySize) {
                             System.err.println("Comando Invalido!");
                         } else {
-                            String historyCommand = commandHistory.get(historySize-historyNum);
+                            String historyCommand = commandHistory.get(historySize - historyNum);
                             commandParser(historyCommand, cdDirection);
                         }
                     } else {
-                        System.out.println("Comando invalido: "+secondComandFinal);
-                        //System.err.println("Comando Invalido!");
+                        System.out.println("Comando invalido: " + secondComandFinal);
                     }
             }
             ;
         }
     }
 
-    public void addCommandHistory(String command){
+    public void addCommandHistory(String command) {
         int size = commandHistory.size();
 
-        if (size == 20){
+        if (size == 20) {
             commandHistory.removeFirst();
         }
         commandHistory.add(command);
@@ -338,26 +308,15 @@ public class Shell {
         }
     }
 
-    public static void testOS()
-    {
-        if (System.getProperty("os.name").toLowerCase().contains("windows")) {
-            //processBuilder.command("cmd.exe", "/c", command);
-            operativeSistem="Windows";
-        }
-        else if (System.getProperty("os.name").toLowerCase().contains("mac")) {
-            // processBuilder.command("/bin/sh", "-c", command.replace("ipconfig","ifconfig"));
-            operativeSistem="mac";
-        }
-        else if (System.getProperty("os.name").toLowerCase().contains("sunos")) {
-            // processBuilder.command("/bin/ksh", "-c", command);
-            operativeSistem="sunos";
-        }
-        else {
-            //processBuilder.command("/bin/bash", "-c", command.replace("ipconfig","ifconfig"));
-            operativeSistem="Linux";
+    public static void testOS() {
+        if (System.getProperty("os.name").toLowerCase().equals("windows")) {
+            operativeSistem = "windows";
+        } else if (System.getProperty("os.name").toLowerCase().equals("mac")) {
+            operativeSistem = "mac";
+        } else {
+            operativeSistem = "linux";
         }
         System.out.println(System.getProperty("os.name"));
-
     }
 
     public static void main(String[] args) {
@@ -366,7 +325,6 @@ public class Shell {
         String commandLine = "";
         String starRepo = "pwd";
         ProcessBuilder pb1 = new ProcessBuilder(starRepo);
-
 
         testOS();
 
