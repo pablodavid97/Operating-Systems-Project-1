@@ -76,10 +76,7 @@ public class Shell {
                     } catch (Exception e) {
                         //e.printStackTrace();
                     }
-<<<<<<< HEAD
 
-=======
->>>>>>> e35fb0607c0440794ec92d875c28f80fcd80db1f
                     addCommandHistory(command);
                     break;
                 case "cd":
@@ -131,18 +128,11 @@ public class Shell {
                             e.printStackTrace();
                         }
                     }
-<<<<<<< HEAD
 
                     else if (secondComandFinal.get(1).startsWith("..")){
 
                         int pos = 0;
                         if(secondComandFinal.get(1).contains("/") ){
-=======
-                    else if (secondComandFinal.get(1).startsWith("..")){
-
-                        int pos = 0;
-                        if(secondComandFinal.get(1).contains("/")){
->>>>>>> e35fb0607c0440794ec92d875c28f80fcd80db1f
                             String[] goBacks = secondComandFinal.get(1).split("/");
 
                             for(String goBack : goBacks){
@@ -156,18 +146,12 @@ public class Shell {
 
                         pb.directory(new File(cdDirection));
                     }
-<<<<<<< HEAD
                     else if (! secondComandFinal.get(1).contains("home")) {
                         cdDirection += "/" + secondCommand[1];
                         pb.directory(new File(cdDirection));
                     }else {
                         cdDirection=secondComandFinal.get(1);
                         pb.directory(new File(cdDirection));
-=======
-                    else {
-                        cdDirection += "/" + secondCommand[1];
-                        pb.directory(new File(cdDirection));
->>>>>>> e35fb0607c0440794ec92d875c28f80fcd80db1f
                     }
                     System.out.println(cdDirection);
                     addCommandHistory(command);
@@ -327,12 +311,8 @@ public class Shell {
                             commandParser(historyCommand, cdDirection);
                         }
                     } else {
-<<<<<<< HEAD
                         System.out.println("Comando invalido: "+secondComandFinal);
                         //System.err.println("Comando Invalido!");
-=======
-                        System.err.println("Comando Invalido!");
->>>>>>> e35fb0607c0440794ec92d875c28f80fcd80db1f
                     }
             }
             ;
@@ -348,11 +328,7 @@ public class Shell {
         commandHistory.add(command);
     }
 
-<<<<<<< HEAD
     public static void getCommandHistory() {
-=======
-    public void getCommandHistory() {
->>>>>>> e35fb0607c0440794ec92d875c28f80fcd80db1f
         Iterator<String> iterator = commandHistory.descendingIterator();
 
         int i = 0;
