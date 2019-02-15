@@ -1,3 +1,13 @@
+/**
+ * Adrian Duque y Pablo Llanes
+ * Sistemas Operativos
+ * Proyect 1: Shell.java
+ * <p>
+ * Custom command lines for shell that work with different Operating Systems.
+ * The program uses the ProcessBuilder API to achieve the desired results.
+ */
+
+
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Scanner;
@@ -9,8 +19,8 @@ import java.util.regex.Pattern;
 
 public class Shell {
     private static LinkedList<String> commandHistory;
-    private static String cdDirection;
-    private static String operativeSistem;
+    private static String cdDirection; // variable to detect the class
+    private static String operativeSistem; // variable to detect the operating system
 
     public Shell() {
         commandHistory = new LinkedList<>();
@@ -28,19 +38,18 @@ public class Shell {
             for (String i : secondCommand)
                 secondComandFinal.add(i);
 
-
+            // detects the operating system in order to use ifconfig command
             if (operativeSistem == "windows" && secondComandFinal.get(0) == "ifconfig") {
                 secondComandFinal.set(0, "ipconfig");
-            } else if (operativeSistem.contains("Linux") && secondComandFinal.get(0).contains("ip")) {
+            } else if (operativeSistem.contains("linux") && secondComandFinal.get(0).contains("ip")) {
                 secondComandFinal.set(0, "ifconfig");
             }
             System.out.println("\n" + secondComandFinal + ":");
 
+            // analyzes different commands and takes action depending on the command
             switch (secondComandFinal.get(0)) {
                 case "ls":
-                    //rocessBuilder pb = new ProcessBuilder(secondCommand);
-                    if (secondComandFinal.size() <= 2)
-                        secondComandFinal.add(cdDirection);
+                    if (secondComandFinal.size() <= 2) secondComandFinal.add(cdDirection);
 
                     String temporal = new String();
                     for (String i : secondComandFinal) {
@@ -48,12 +57,11 @@ public class Shell {
                     }
                     ProcessBuilder pb = new ProcessBuilder();
 
+                    // executes commands depending on the operating system
                     if (operativeSistem.contains("windows")) {
-                        pb.command("cmd.exe", "/c", temporal);
-
+                        pb.command("c:\\cygwin64\\bin\\bash", "-c", temporal);
                     } else if (operativeSistem.contains("linux")) {
                         pb.command("/bin/bash", "-c", temporal);
-
                     } else if (operativeSistem.contains("mac")) {
                         pb.command("/bin/sh", "-c", temporal);
                     }
@@ -75,12 +83,19 @@ public class Shell {
 
                     pb = new ProcessBuilder();
                     String temporalcd = new String();
+
+                    if(operativeSistem.equals("windows")){
+                        cdDirection = cdDirection.replace("/cygdrive/c", "c:");
+                    }
+                    pb.directory(new File(cdDirection));
+
                     for (String i : secondComandFinal) {
                         temporalcd += " " + i;
                     }
 
-                    if (operativeSistem.equals("windows")) {
-                        pb.command("cmd.exe", "/c", temporalcd);
+                    if (operativeSistem.contains("windows")) {
+                        pb.command("c:\\cygwin64\\bin\\bash", "-c", temporalcd);
+//                        System.out.println(temporalcd);
 
                     } else if (operativeSistem.equals("linux")) {
                         pb.command("/bin/bash", "-c", temporalcd);
@@ -102,7 +117,17 @@ public class Shell {
                     }
 
                     if (secondComandFinal.size() < 2) {
-                        pb.command("pwd");
+
+                        if (operativeSistem.contains("windows")) {
+                            pb.command("c:\\cygwin64\\bin\\bash", "-c", "pwd");
+//                        System.out.println(temporalcd);
+
+                        } else if (operativeSistem.equals("linux")) {
+                            pb.command("/bin/bash", "-c", "pwd");
+
+                        } else if (operativeSistem.equals("mac")) {
+                            pb.command("/bin/sh", "-c", "pwd");
+                        }
 
                         // startinf the process
                         try {
@@ -114,6 +139,10 @@ public class Shell {
                             }
                         } catch (IOException e) {
                             e.printStackTrace();
+                        }
+
+                        if(operativeSistem.equals("windows")){
+                            cdDirection = cdDirection.replace("/cygdrive/c", "c:");
                         }
                     } else if (secondComandFinal.get(1).startsWith("..")) {
 
@@ -129,9 +158,10 @@ public class Shell {
                             pos = cdDirection.lastIndexOf('/');
                             cdDirection = cdDirection.substring(0, pos);
                         }
-
-                        pb.directory(new File(cdDirection));
-                    } else if (!secondComandFinal.get(1).contains("home")) {
+                    } else if (secondComandFinal.get(1).contains("home") || secondComandFinal.get(1).contains("c:")) {
+                        cdDirection = secondComandFinal.get(1);
+                    }
+                    else {
 
                         if (!secondCommand[1].startsWith("/")) {
                             cdDirection += "/";
@@ -142,13 +172,10 @@ public class Shell {
                         if (cdDirection.charAt(size - 1) == '/') {
                             cdDirection = cdDirection.substring(0, size - 1);
                         }
-                        pb.directory(new File(cdDirection));
-                    } else {
-                        cdDirection = secondComandFinal.get(1);
-                        pb.directory(new File(cdDirection));
                     }
-                    System.out.println(cdDirection);
                     addCommandHistory(command);
+                    pb.directory(new File(cdDirection));
+                    System.out.println(cdDirection);
                     break;
 
                 case "echo":
@@ -159,7 +186,7 @@ public class Shell {
                     }
 
                     if (operativeSistem.contains("indows")) {
-                        pb.command("cmd.exe", "/c", temporalecho);
+                        pb.command("c:\\cygwin64\\bin\\bash", "-c", temporalecho);
 
                     } else if (operativeSistem.contains("inux")) {
                         pb.command("/bin/bash", "-c", temporalecho);
@@ -187,7 +214,7 @@ public class Shell {
                     }
 
                     if (operativeSistem.contains("indows")) {
-                        pb.command("cmd.exe", "/c", temporalping);
+                        pb.command("c:\\cygwin64\\bin\\bash", "-c", temporalping);
 
                     } else if (operativeSistem.contains("inux")) {
                         pb.command("/bin/bash", "-c", temporalping);
@@ -214,13 +241,13 @@ public class Shell {
                         temporalip += " " + i;
                     }
 
-                    if (operativeSistem.contains("indows")) {
-                        pb.command("cmd.exe", "/c", temporalip);
+                    if (operativeSistem.equals("windows")) {
+                        pb.command("c:\\cygwin64\\bin\\bash", "-c", temporalip);
 
-                    } else if (operativeSistem.contains("inux")) {
+                    } else if (operativeSistem.equals("linux")) {
                         pb.command("/bin/bash", "-c", temporalip);
 
-                    } else if (operativeSistem.contains("mac")) {
+                    } else if (operativeSistem.equals("mac")) {
                         pb.command("/bin/sh", "-c", temporalip);
                     }
                     try {
@@ -243,7 +270,7 @@ public class Shell {
                     }
 
                     if (operativeSistem.contains("indows")) {
-                        pb.command("cmd.exe", "/c", temporalif);
+                        pb.command("c:\\cygwin64\\bin\\bash", "-c", temporalif);
 
                     } else if (operativeSistem.contains("inux")) {
                         pb.command("/bin/bash", "-c", temporalif);
@@ -268,6 +295,34 @@ public class Shell {
                     getCommandHistory();
                     break;
                 case "exit":
+                    break;
+                case "pwd":
+                    ProcessBuilder pb1 = new ProcessBuilder();
+
+                    // testOS();
+
+                    if (operativeSistem.contains("indows")) {
+                        pb1.command("c:\\cygwin64\\bin\\bash", "-c", "pwd");
+                        //pb1.directory(new File("c:\\Users\\Ramir\\Desktop"));
+                        //cdDirection= System.getProperty("user.dir");
+                        //System.out.println(cdDirection);
+                    } else {
+                        pb1.command("/bin/sh", "-c", "pwd");
+                    }
+
+                    // startinf the process
+                    try {
+                        Process process = pb1.start();
+                        BufferedReader stdInput = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                        String s = null;
+                        while ((s = stdInput.readLine()) != null) {
+                            System.out.println(" Currect Directory: " + s);
+                            cdDirection = s;
+
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                     break;
                 default:
                     String commandForHistory = secondComandFinal.get(0);
@@ -309,14 +364,14 @@ public class Shell {
     }
 
     public static void testOS() {
-        if (System.getProperty("os.name").toLowerCase().equals("windows")) {
+        if (System.getProperty("os.name").toLowerCase().contains("windows")) {
             operativeSistem = "windows";
         } else if (System.getProperty("os.name").toLowerCase().equals("mac")) {
             operativeSistem = "mac";
         } else {
             operativeSistem = "linux";
         }
-        System.out.println(System.getProperty("os.name"));
+        System.out.println(operativeSistem);
     }
 
     public static void main(String[] args) {
@@ -324,19 +379,34 @@ public class Shell {
         Scanner input = new Scanner(System.in);
         String commandLine = "";
         String starRepo = "pwd";
-        ProcessBuilder pb1 = new ProcessBuilder(starRepo);
+        ProcessBuilder pb1 = new ProcessBuilder();
 
+        // determines the operating sistem
         testOS();
+
+        // replaces path if windows is detected
+        if (operativeSistem.equals("windows")) {
+            pb1.command("c:\\cygwin64\\bin\\bash", "-c", starRepo);
+        } else {
+            pb1.command("/bin/sh", "-c", starRepo);
+        }
 
         // startinf the process
         try {
+            // starts the process and continues until user types exit command
             Process process = pb1.start();
             BufferedReader stdInput = new BufferedReader(new InputStreamReader(process.getInputStream()));
             String s = null;
+            String temp = null;
             while ((s = stdInput.readLine()) != null) {
-                System.out.println(" Currect Directory: " + s);
                 cdDirection = s;
 
+                if(operativeSistem.equals("windows")){
+                    temp = s;
+                    System.out.println("Current Directory: " + temp.replace("/cygdrive/c", "c:"));
+                } else {
+                    System.out.println(" Currect Directory: " + s);
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -347,8 +417,6 @@ public class Shell {
             commandLine = input.nextLine();
 
             shell.commandParser(commandLine, cdDirection);
-        }
-        while (!commandLine.equals("exit"));
+        } while (!commandLine.equals("exit"));
     }
-
 }
